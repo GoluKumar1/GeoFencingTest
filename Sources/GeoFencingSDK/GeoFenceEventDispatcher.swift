@@ -9,6 +9,7 @@ import UIKit
 final class GeoFenceEventDispatcher {
     private var options: GeoFencingOptions
     private let webhookClient: WebhookClient
+    private var eventSink: ((GeoFenceEvent) -> Void)?
 
     init(options: GeoFencingOptions = GeoFencingOptions(), webhookClient: WebhookClient = WebhookClient()) {
         self.options = options
@@ -17,6 +18,10 @@ final class GeoFenceEventDispatcher {
 
     func configure(options: GeoFencingOptions) {
         self.options = options
+    }
+
+    func setEventSink(_ sink: ((GeoFenceEvent) -> Void)?) {
+        self.eventSink = sink
     }
 
     func dispatch(transition: GeoFenceTransition, region: CLRegion) {
@@ -34,6 +39,8 @@ final class GeoFenceEventDispatcher {
             regionRadiusMeters: radius,
             appState: currentAppState()
         )
+
+        eventSink?(event)
 
         let name: Notification.Name = (transition == .enter) ? .geoFenceDidEnter : .geoFenceDidExit
         options.notificationCenter.post(
