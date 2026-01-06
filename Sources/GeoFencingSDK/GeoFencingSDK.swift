@@ -9,10 +9,22 @@ import Foundation
 public final class GeoFencingSDK {
     public static let shared = GeoFencingSDK()
 
+    /// Optional delegate callback for geofence events (in addition to NotificationCenter).
+    public weak var delegate: GeoFencingSDKDelegate?
+
     private let manager: GeoFenceManager
 
     private init() {
         self.manager = GeoFenceManager()
+        self.manager.setEventSink { [weak self] event in
+            guard let self else { return }
+            switch event.transition {
+            case .enter:
+                self.delegate?.geoFencingSDK(self, didEnter: event)
+            case .exit:
+                self.delegate?.geoFencingSDK(self, didExit: event)
+            }
+        }
     }
 
     /// Call this early (e.g. app launch) to ensure the SDK is initialized and ready to receive region callbacks.
