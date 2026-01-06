@@ -78,6 +78,32 @@ final class GeoFencingSDKTests: XCTestCase {
 
         await fulfillment(of: [exp], timeout: 1.0)
     }
+
+    func testEventSinkCalledOnEnterAndExit() async {
+        let expEnter = expectation(description: "eventSink enter")
+        let expExit = expectation(description: "eventSink exit")
+
+        await MainActor.run {
+            let dispatcher = GeoFenceEventDispatcher()
+            dispatcher.setEventSink { event in
+                if event.transition == .enter {
+                    expEnter.fulfill()
+                } else {
+                    expExit.fulfill()
+                }
+            }
+
+            let region = CLCircularRegion(
+                center: CLLocationCoordinate2D(latitude: 37.0, longitude: -122.0),
+                radius: 100,
+                identifier: "office"
+            )
+            dispatcher.dispatch(transition: .enter, region: region)
+            dispatcher.dispatch(transition: .exit, region: region)
+        }
+
+        await fulfillment(of: [expEnter, expExit], timeout: 1.0)
+    }
 }
 
 
