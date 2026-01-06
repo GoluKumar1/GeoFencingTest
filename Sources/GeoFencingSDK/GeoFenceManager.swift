@@ -24,6 +24,10 @@ final class GeoFenceManager: NSObject {
         dispatcher.configure(options: options)
     }
 
+    func setEventSink(_ sink: ((GeoFenceEvent) -> Void)?) {
+        dispatcher.setEventSink(sink)
+    }
+
     func startMonitoring(regions: [GeoFenceRegion]) throws {
         let maxAllowed = 20
         guard regions.count <= maxAllowed else {
